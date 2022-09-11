@@ -63,5 +63,3 @@ module TreeSort
     end
 
 end
-
-p TreeSort.tree_merge_sort([1,6,2,5,3,4,3,4,2,5,1,6])

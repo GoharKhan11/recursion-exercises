@@ -1,4 +1,4 @@
-class TreeNode
+class BinaryTreeNode
 
     include Comparable
 
