@@ -68,10 +68,97 @@ class BinarySearchTree
         puts "#{prefix}#{is_left ? '└── ' : '┌── '}#{node.data}"
         # recursively calls on right subtree
         pretty_print(node.left_child, "#{prefix}#{is_left ? '    ' : '│   '}", true) if node.left_child
-      end
+    end
+
+    def insert (value)
+        # int -> nil
+
+        # Check if child is nil in case root node is nil
+        # This case only occurs on the root node
+        unless @root.class == BinaryTreeNode
+            # Set root as the desired node
+            @root = BinaryTreeNode.new(value)
+        else
+            # Otherwise call insert helper function to insert node
+            _insert_helper(value)
+        end
+    end
+
+    def _insert_helper (value, current_node=@root)
+        # int, BinaryTreeNode -> nil
+        # Inserts a new node with the value at a leaf position
+        # if the value isn't already present in the tree.
+
+        # We ignore the case when value == current_node.data
+        # (we end the process since we do not want duplicates)
+
+        # Bool for wheter value was added to tree (default true)
+        # We make this value false when value failed to be added
+        # because it already exists in the tree
+        value_added = true
+
+        # If value is less than current node data check left child
+        if value < current_node.data
+            # If there is no left child then we create a new node with the value
+            # as the left child
+            if current_node.left_child.nil?
+                current_node.left_child = BinaryTreeNode.new(value)
+            # If there is a left child then we recursively call on that child
+            else
+                value_added =_insert_helper(value, current_node.left_child)
+            end
+        # If value is greater than current node data move to right child
+        elsif value > current_node.data
+            # If there is no left child then we create a new node with the value
+            # as the left child
+            if current_node.right_child.nil?
+                current_node.right_child = BinaryTreeNode.new(value)
+            # If there is a right child then we recursively call on that child
+            else
+                value_added = _insert_helper(value, current_node.right_child)
+            end
+        # If value == current_node data then we do not add value
+        # and change value added bool to false
+        else
+            value_added = false
+        end
+        # notify user whether value was added
+        value_added
+
+    end
+
+    def delete (value)
+        # int -> nil
+
+        node_to_delete = get_node_by_value(value)
+
+    end
+
+    def get_node_by_value (value)
+        # int -> BinaryTreeNode/nil
+        # Returns the node in the BST with the desired value.
+        # Returns nil if no node was found with desired value.
+
+        # Set initial value of the current node as the root node
+        current_node = @root
+        # Keep moving down the tree until no more nodes remain (nil value reached)
+        # or desired node is found
+        until current_node.nil? || current_node.data == value
+            # If desired value is lesser than current node data move to
+            # left subtree (which would have a smaller value than the parent)
+            if value < current_node.data
+                current_node = current_node.left_child
+            # If desired value is greater than current node data move to
+            # right subtree (which would have a bigger value than the parent)
+            else
+                current_node = current_node.right_child
+            end
+        end
+        current_node
+    end
 
 end
 
-main_tree = BinarySearchTree.new([1,6,2,5,3,4,2,4,3,5,1,6])
-puts "show tree:"
-main_tree.pretty_print
+main_tree = BinarySearchTree.new([4,4,7,14,25,1,6,1,20,25,22])
+puts "get value 14 (exists):"
+p main_tree.get_node_by_value(22).data

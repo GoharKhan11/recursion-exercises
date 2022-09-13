@@ -22,6 +22,8 @@ module TreeSort
         end
     end
 
+    private
+
     def _tree_merge_helper (left_array, right_array)
         # Array, Array -> Array
         # Takes two sorted arrays (ascending order)
