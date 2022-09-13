@@ -1,5 +1,6 @@
 require "./lib/tree_array_sort.rb"
 require "./lib/tree_node.rb"
+require "./lib/invalid-node-error.rb"
 
 class BinarySearchTree
     # Note: BST = Binary SearchTree
@@ -72,6 +73,9 @@ class BinarySearchTree
 
     def insert (value)
         # int -> nil
+        # If tree is empty sets node with value as root,
+        # otherwise insert node with value in a leaf position
+        # while maintaining BST conditions
 
         # Check if child is nil in case root node is nil
         # This case only occurs on the root node
@@ -83,6 +87,44 @@ class BinarySearchTree
             _insert_helper(value)
         end
     end
+
+    def delete (value)
+        # int -> nil
+        # Removes the desires node if it exists
+        # Restores BST to maintain BST properties.
+        # Note: raises InvalidNodeError when node doesn't exist
+
+        node_to_delete = get_node_by_value(value)
+        if node_to_delete.nil?
+
+    end
+
+    def get_node_by_value (value)
+        # int -> BinaryTreeNode/nil
+        # Returns the node in the BST with the desired value.
+        # Returns nil if no node was found with desired value.
+
+        # Set initial value of the current node as the root node
+        current_node = @root
+        # Keep moving down the tree until no more nodes remain (nil value reached)
+        # or desired node is found
+        until current_node.nil? || current_node.data == value
+            # If desired value is lesser than current node data move to
+            # left subtree (which would have a smaller value than the parent)
+            if value < current_node.data
+                current_node = current_node.left_child
+            # If desired value is greater than current node data move to
+            # right subtree (which would have a bigger value than the parent)
+            else
+                current_node = current_node.right_child
+            end
+        end
+        current_node
+    end
+
+    private
+
+    # START: insert helper methods
 
     def _insert_helper (value, current_node=@root)
         # int, BinaryTreeNode -> nil
@@ -127,35 +169,7 @@ class BinarySearchTree
 
     end
 
-    def delete (value)
-        # int -> nil
-
-        node_to_delete = get_node_by_value(value)
-
-    end
-
-    def get_node_by_value (value)
-        # int -> BinaryTreeNode/nil
-        # Returns the node in the BST with the desired value.
-        # Returns nil if no node was found with desired value.
-
-        # Set initial value of the current node as the root node
-        current_node = @root
-        # Keep moving down the tree until no more nodes remain (nil value reached)
-        # or desired node is found
-        until current_node.nil? || current_node.data == value
-            # If desired value is lesser than current node data move to
-            # left subtree (which would have a smaller value than the parent)
-            if value < current_node.data
-                current_node = current_node.left_child
-            # If desired value is greater than current node data move to
-            # right subtree (which would have a bigger value than the parent)
-            else
-                current_node = current_node.right_child
-            end
-        end
-        current_node
-    end
+    # END: insert helper methods
 
 end
 
