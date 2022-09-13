@@ -94,12 +94,20 @@ class BinarySearchTree
         # Restores BST to maintain BST properties.
         # Note: raises InvalidNodeError when node doesn't exist
 
+        # Get the node to be deleted (gets nil if node doesn't exist)
         node_to_delete = get_node_by_value(value)
+        # Raise error if node doesn't exist
         if node_to_delete.nil?
+            raise InvalidNodeError("The desired node doesn't exist")
+        # If node found
+        else
+            node_left_child
+            node right_child
+        end
 
     end
 
-    def get_node_by_value (value)
+    def get_node (value)
         # int -> BinaryTreeNode/nil
         # Returns the node in the BST with the desired value.
         # Returns nil if no node was found with desired value.
@@ -120,6 +128,43 @@ class BinarySearchTree
             end
         end
         current_node
+    end
+
+    def get_parent (value)
+        # int -> BinaryTreeNode/nil
+        # Returns the node in the BST which has a child
+        # with the desired child.
+        # Returns nil if no node was found with desired value.
+
+        # If the desired value is the root node then raise error
+        # as root has no parent
+        if value == @root.data
+            raise InvalidNodeError.new("Root node has no parent node")
+        end
+
+        # Store parent node of desired node
+        parent_node = @root
+        # Store current node as we look for desired node
+        current_node = @root
+
+        # Move down till no more nodes left or desired node reached
+        until current_node.nil? || value == current_node.data
+            # If desired value is lesser than current node data move to
+            # left subtree (which would have a smaller value than the parent)
+            if value < current_node.data
+                # Set current node as parent before moving to child
+                parent_node = current_node
+                current_node = current_node.left_child
+            # If desired value is greater than current node data move to
+            # right subtree (which would have a bigger value than the parent)
+            else
+                # Set current node as parent before moving to child
+                parent_node = current_node
+                current_node = current_node.right_child
+            end
+        end
+        raise InvalidNodeError.new("Node with value #{value} does not exist") if current_node.nil?
+        parent_node
     end
 
     private
@@ -174,5 +219,10 @@ class BinarySearchTree
 end
 
 main_tree = BinarySearchTree.new([4,4,7,14,25,1,6,1,20,25,22])
-puts "get value 14 (exists):"
-p main_tree.get_node_by_value(22).data
+main_tree.pretty_print
+puts "get value 7 (exists):"
+begin
+    puts main_tree.get_parent(1).data
+rescue => exception
+    puts exception.message
+end
