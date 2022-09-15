@@ -267,6 +267,7 @@ class BinarySearchTree
         # nil -> balanced
         # Returns true if the BST is balanced else returns false
 
+        balanced_helper(@root)[0]
     end
 
     def rebalance
@@ -283,7 +284,7 @@ class BinarySearchTree
 
     end
 
-    # private
+    private
 
     # START: insert helper methods
 
@@ -332,6 +333,38 @@ class BinarySearchTree
 
     # END: insert helper methods
 
+    # START: balanced? helper methods
+
+    def balanced_helper (subtree_root)
+        # BinaryTreeNode -> Array[bool, int]
+        # Returns an array where first value shows if subtree is balanced and second value
+        # shows height of subtree
+
+        # If the subtree is empty
+        # Return that subtree is balanced with height 0
+        return [true, 0] if subtree_root.nil?
+
+        # If subtree is not empty
+        # Recursively call balanced_helper to get the balanced status array for left and right
+        # child 
+        left_status = balanced_helper(subtree_root.left_child)
+        right_status = balanced_helper(subtree_root.right_child)
+        # See if left and right subtrees are balanced
+        # See if height of both subtrees differ by at most 1 (so current tree is balanced)
+        balanced = left_status[0] && right_status[0] &&
+            ((left_status[1] - right_status[1]).abs <= 1)
+        return [balanced, 1+max(left_status[1], right_status[1])]
+
+    end
+
+    def max (*values)
+        # var_args(int) -> int
+        values.max
+    end
+
+    # END: balanced? helper methods
+
+
 end
 
 main_tree = BinarySearchTree.new([4,4,7,14,25,1,6,1,20,25,22])
@@ -341,8 +374,4 @@ main_tree.insert(16)
 main_tree.insert(15)
 main_tree.insert(18)
 main_tree.insert(21)
-main_tree.pretty_print
-
-# rebalance test
-main_tree.rebalance
 main_tree.pretty_print
