@@ -22,7 +22,7 @@ class BinarySearchTree
             # Note: uses TreeSort module
             tree_array = self.tree_merge_sort(tree_array)
             # build a balanced binary tree from the sorted tree array
-            @root = build_tree(tree_array, 0, tree_array.length)
+            @root = build_tree(tree_array, 0, tree_array.length-1)
         end
 
     end
@@ -42,8 +42,10 @@ class BinarySearchTree
         else
             # Get the element in the middle of the array (rounded down)
             middle_index = (start_index + end_index)/2
+
             # Make a tree node with the middle array element
             tree_root = BinaryTreeNode.new(tree_array[middle_index])
+
             # recursively construct left subtree and set as left child
             # of root
             tree_root.left_child = build_tree(tree_array, start_index, middle_index-1)
@@ -88,22 +90,45 @@ class BinarySearchTree
         end
     end
 
-    def delete (value)
+    def delete (delete_value, subtree_root=@root)
         # int -> nil
         # Removes the desires node if it exists
         # Restores BST to maintain BST properties.
         # Note: raises InvalidNodeError when node doesn't exist
 
-        # Get the node to be deleted (gets nil if node doesn't exist)
-        node_to_delete = get_node_by_value(value)
-        # Raise error if node doesn't exist
-        if node_to_delete.nil?
-            raise InvalidNodeError("The desired node doesn't exist")
-        # If node found
+        if subtree_root.data.nil?
+            return subtree_root
+        elsif delete_value < subtree_root.data
+            subtree_root.left_child = delete(delete_value, subtree_root.left_child)
+        elsif delete_value > subtree_root.data
+            subtree_root.right_child = delete(delete_value, subtree_root.right_child)
+        # delete_value == subtree_root.data
+        # We found node to delete
         else
-            node_left_child
-            node right_child
+
+            # Case (1): Deleted node has no children
+            return nil unless subtree_root.has_children?
+            # Case (2): Deleted node has one child
+            # Move up right child if no left child
+            return subtree_root.right_child unless subtree_root.has_left?
+            # Move up left child if no right child
+            return subtree_root.left_child unless subtree_root.has_right?
+
+            # Case (3): Deleted node has two children
+
+            # Get the smallest node in the subtree with deleted node as root
+            # This node will replace the deleted node
+            # Rather than replacing the whole node we replace the data
+            replace_node_value = get_min(subtree_root.right_child).data
+            # Since we replaced data we still need to remove the old replacing
+            # node, this has no kids so is easy for delete to handle
+            delete(replace_node_value, subtree_root)
+            # Since we deleted old replacing node we can replace value of
+            # deleted node without duplicating values
+            subtree_root.data = replace_node_value
+
         end
+        subtree_root
 
     end
 
@@ -167,7 +192,29 @@ class BinarySearchTree
         parent_node
     end
 
-    private
+    def get_min (current_node=@root)
+        # BinaryTreeNode -> BinaryTreeNode
+        # Get the minimum value node in the subtree
+        # Default subtree: @root
+
+        while current_node.has_left?
+            current_node = current_node.left_child
+        end
+        current_node
+    end
+
+    def get_max (current_node=@root)
+        # BinaryTreeNode -> BinaryTreeNode
+        # Get the minimum value node in the subtree
+        # Default subtree: @root
+
+        while current_node.has_right?
+            current_node = current_node.right_child
+        end
+        current_node
+    end
+
+    # private
 
     # START: insert helper methods
 
@@ -216,13 +263,64 @@ class BinarySearchTree
 
     # END: insert helper methods
 
+    # START: delete helper methods
+
+    def _move_grandchild_up (parent_node, inserted_node, is_left)
+        # BinaryTreeNode, BinaryTreeNode, bool -> nil
+        # inserts a certain grandchild node to grandparent node
+        # is_left tells whether node is inserted to left or right
+        # of grandparent
+        # grandchild refers to any descendent of child node
+
+         puts parent_node.data
+         puts inserted_node.data
+         puts is_left
+        if is_left
+            puts "inserting left"
+            parent_node.left_child = inserted_node
+        else
+            puts "inserting right"
+            parent_node.right_child = inserted_node
+        end
+    end
+
+    def _parent_of_next_biggest (parent_node)
+        # BinaryTreeNode -> Array[BinaryTreeNode, bool]
+        # Finds the node in the right subtree of the initial
+        # node with the minimal value greater than it and
+        # returns the parent of this node
+        # and a bool of whether it is the left or right child.
+        # WARNING: assumes initial node has both children
+
+        # We start in the right subtree because only it has values
+        # greater than original node
+        current_node=parent_node.right_child
+        # We keep moving till the bottom left (smallest) node
+        # in the right subtree is reached
+        until current_node.left_child.nil?
+            # Move parent down to current node
+            parent_node = current_node
+            # Move current node down to next smaller node
+            current_node = current_node.left_child
+        end
+        parent_node
+    end
+
+    # END: delete helper methods
+
 end
 
 main_tree = BinarySearchTree.new([4,4,7,14,25,1,6,1,20,25,22])
+# main_tree.pretty_print
+
+main_tree.insert(16)
+main_tree.insert(15)
+main_tree.insert(18)
+main_tree.insert(21)
 main_tree.pretty_print
-puts "get value 7 (exists):"
-begin
-    puts main_tree.get_parent(1).data
-rescue => exception
-    puts exception.message
-end
+
+# puts max_node = main_tree.get_max.has_children?
+# puts min_right_subtree = main_tree.get_min(main_tree.root.right_child).has_right?
+# puts main_tree.root.has_children?
+main_tree.delete(14)
+main_tree.pretty_print

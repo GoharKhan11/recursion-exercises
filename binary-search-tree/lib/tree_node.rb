@@ -20,4 +20,47 @@ class BinaryTreeNode
         @data <=> other_tree_node.data
     end
 
+    def has_left?
+        # BinaryTreeNode -> bool
+        # returns true if the node has a left child
+        # else returns false
+
+        # Return false if left child empty (nil)
+        if self.left_child.nil?
+            return false
+        # else return true
+        else
+            return true
+        end
+    end
+
+    def has_right?
+        # BinaryTreeNode -> bool
+        # returns true if the node has a right child
+        # else returns false
+
+        # Return false if right child empty (nil)
+        if self.right_child.nil?
+            return false
+        # else return true
+        else
+            return true
+        end
+    end
+
+    def has_children?
+        # BinaryTreeNode -> bool
+        # returns true if the node has any children
+        # else returns false
+
+        # If both children are nil, return false (no children)
+        if self.left_child.nil? && self.right_child.nil?
+            return false
+        # else return true
+        else
+            return true
+        end
+
+    end
+
 end
