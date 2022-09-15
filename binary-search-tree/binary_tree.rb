@@ -66,11 +66,13 @@ class BinarySearchTree
         #       the higher the level the longer the branch
 
         # Recursively create string representation of right subtree
-        pretty_print(node.right_child, "#{prefix}#{is_left ? '│   ' : '    '}", false) if node.right_child
+        pretty_print(node.right_child,
+            "#{prefix}#{is_left ? '│   ' : '    '}", false) if node.right_child
         # Adds end of branch and data of current node
         puts "#{prefix}#{is_left ? '└── ' : '┌── '}#{node.data}"
         # recursively calls on right subtree
-        pretty_print(node.left_child, "#{prefix}#{is_left ? '    ' : '│   '}", true) if node.left_child
+        pretty_print(node.left_child,
+            "#{prefix}#{is_left ? '    ' : '│   '}", true) if node.left_child
     end
 
     def insert (value)
@@ -130,6 +132,53 @@ class BinarySearchTree
         end
         subtree_root
 
+    end
+
+    def inorder (subtree_root=@root, result=[])
+        # BinaryTreeNode -> Array
+        # Returns an array representing an inorder traversal of the BST
+
+        # While we haven't hit the end of a tree branch keep traversing through
+        # the tree
+        unless subtree_root.nil?
+            # Add the inorder traversal result from left subtree
+            result.concat(inorder(subtree_root.left_child))
+            # Add value of current node to result
+            result.push(subtree_root.data)
+            # Add inorder traversal result from right subtree
+            (inorder(subtree_root.right_child, result))
+        end
+        result
+    end
+
+    def preorder (subtree_root=@root, result=[])
+        # BinaryTreeNode -> Array
+        # Returns an array representing an inorder traversal of the BST
+        
+        unless subtree_root.nil?
+            # Add value of current node to result
+            result.push(subtree_root.data)
+            # Add the inorder traversal result from left subtree
+            result.concat(preorder(subtree_root.left_child))
+            # Add inorder traversal result from right subtree
+            (preorder(subtree_root.right_child, result))
+        end
+        result
+    end
+
+    def postorder (subtree_root=@root, result=[])
+        # BinaryTreeNode -> Array
+        # Returns an array representing an inorder traversal of the BST
+        
+        unless subtree_root.nil?
+            # Add the inorder traversal result from left subtree
+            result.concat(postorder(subtree_root.left_child))
+            # Add inorder traversal result from right subtree
+            (postorder(subtree_root.right_child, result))
+            # Add value of current node to result
+            result.push(subtree_root.data)
+        end
+        result
     end
 
     def get_node (value)
@@ -214,6 +263,26 @@ class BinarySearchTree
         current_node
     end
 
+    def balanced?
+        # nil -> balanced
+        # Returns true if the BST is balanced else returns false
+
+    end
+
+    def rebalance
+        # nil -> nil
+        # Makes the current binary tree into a balanced binary tree
+
+        # Get the Inorder traversal to get a strictly ascending list
+        # of all the tree values
+        rebalance_array = inorder()
+        # rebuild a balanced binary tree with this array and set as root
+        # note build_tree creates a balanced binary tree
+        # Note: rebalance array already sorted with no duplicates as required by build_tree
+        @root = build_tree(rebalance_array, 0, (rebalance_array.length - 1))
+
+    end
+
     # private
 
     # START: insert helper methods
@@ -263,51 +332,6 @@ class BinarySearchTree
 
     # END: insert helper methods
 
-    # START: delete helper methods
-
-    def _move_grandchild_up (parent_node, inserted_node, is_left)
-        # BinaryTreeNode, BinaryTreeNode, bool -> nil
-        # inserts a certain grandchild node to grandparent node
-        # is_left tells whether node is inserted to left or right
-        # of grandparent
-        # grandchild refers to any descendent of child node
-
-         puts parent_node.data
-         puts inserted_node.data
-         puts is_left
-        if is_left
-            puts "inserting left"
-            parent_node.left_child = inserted_node
-        else
-            puts "inserting right"
-            parent_node.right_child = inserted_node
-        end
-    end
-
-    def _parent_of_next_biggest (parent_node)
-        # BinaryTreeNode -> Array[BinaryTreeNode, bool]
-        # Finds the node in the right subtree of the initial
-        # node with the minimal value greater than it and
-        # returns the parent of this node
-        # and a bool of whether it is the left or right child.
-        # WARNING: assumes initial node has both children
-
-        # We start in the right subtree because only it has values
-        # greater than original node
-        current_node=parent_node.right_child
-        # We keep moving till the bottom left (smallest) node
-        # in the right subtree is reached
-        until current_node.left_child.nil?
-            # Move parent down to current node
-            parent_node = current_node
-            # Move current node down to next smaller node
-            current_node = current_node.left_child
-        end
-        parent_node
-    end
-
-    # END: delete helper methods
-
 end
 
 main_tree = BinarySearchTree.new([4,4,7,14,25,1,6,1,20,25,22])
@@ -319,8 +343,6 @@ main_tree.insert(18)
 main_tree.insert(21)
 main_tree.pretty_print
 
-# puts max_node = main_tree.get_max.has_children?
-# puts min_right_subtree = main_tree.get_min(main_tree.root.right_child).has_right?
-# puts main_tree.root.has_children?
-main_tree.delete(14)
+# rebalance test
+main_tree.rebalance
 main_tree.pretty_print
