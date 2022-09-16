@@ -544,37 +544,3 @@ class BinarySearchTree
 
 
 end
-
-main_tree = BinarySearchTree.new(Array.new(15) {rand(1..100)})
-main_tree.pretty_print
-puts "tree is balanced?: #{main_tree.balanced?}"
-puts "inorder traversal: #{main_tree.inorder}"
-puts "preorder traversal: #{main_tree.preorder}"
-puts "postorder traversal: #{main_tree.postorder}\n"
-Array.new(10) {rand(100..200)}.each {|item| main_tree.insert(item)}
-puts "After inserting 10 ranomd numbers between 100 and 200:\n"
-main_tree.pretty_print
-main_tree.rebalance
-puts "After rebalance:\n"
-main_tree.pretty_print
-
-# main_tree = BinarySearchTree.new([11,5,2,19,13,2,5,3,17,19])
-# main_tree.pretty_print
-# puts "tree is balanced: #{main_tree.balanced?}"
-# [23, 43, 89, 23, 31, 11, 79].each {|item| main_tree.insert(item)}
-# main_tree.pretty_print
-# puts "tree is balanced: #{main_tree.balanced?}"
-# # main_tree.rebalance
-# # main_tree.pretty_print
-# # puts "tree is balanced: #{main_tree.balanced?}"
-# puts "height of 23: #{main_tree.height(23)}"
-# puts "depth of 23: #{main_tree.depth(23)}"
-# traversal_lambda = ->(current_node) {puts current_node.data}
-# p main_tree.level
-# main_tree.level &traversal_lambda
-# p main_tree.inorder
-# main_tree.inorder &traversal_lambda
-# p main_tree.preorder
-# main_tree.preorder &traversal_lambda
-# p main_tree.postorder
-# main_tree.postorder &traversal_lambda
