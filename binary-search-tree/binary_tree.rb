@@ -75,111 +75,7 @@ class BinarySearchTree
             "#{prefix}#{is_left ? '    ' : '│   '}", true) if node.left_child
     end
 
-    def insert (value)
-        # int -> nil
-        # If tree is empty sets node with value as root,
-        # otherwise insert node with value in a leaf position
-        # while maintaining BST conditions
-
-        # Check if child is nil in case root node is nil
-        # This case only occurs on the root node
-        unless @root.class == BinaryTreeNode
-            # Set root as the desired node
-            @root = BinaryTreeNode.new(value)
-        else
-            # Otherwise call insert helper function to insert node
-            _insert_helper(value)
-        end
-    end
-
-    def delete (delete_value, subtree_root=@root)
-        # int -> nil
-        # Removes the desires node if it exists
-        # Restores BST to maintain BST properties.
-        # Note: raises InvalidNodeError when node doesn't exist
-
-        if subtree_root.data.nil?
-            return subtree_root
-        elsif delete_value < subtree_root.data
-            subtree_root.left_child = delete(delete_value, subtree_root.left_child)
-        elsif delete_value > subtree_root.data
-            subtree_root.right_child = delete(delete_value, subtree_root.right_child)
-        # delete_value == subtree_root.data
-        # We found node to delete
-        else
-
-            # Case (1): Deleted node has no children
-            return nil unless subtree_root.has_children?
-            # Case (2): Deleted node has one child
-            # Move up right child if no left child
-            return subtree_root.right_child unless subtree_root.has_left?
-            # Move up left child if no right child
-            return subtree_root.left_child unless subtree_root.has_right?
-
-            # Case (3): Deleted node has two children
-
-            # Get the smallest node in the subtree with deleted node as root
-            # This node will replace the deleted node
-            # Rather than replacing the whole node we replace the data
-            replace_node_value = get_min(subtree_root.right_child).data
-            # Since we replaced data we still need to remove the old replacing
-            # node, this has no kids so is easy for delete to handle
-            delete(replace_node_value, subtree_root)
-            # Since we deleted old replacing node we can replace value of
-            # deleted node without duplicating values
-            subtree_root.data = replace_node_value
-
-        end
-        subtree_root
-
-    end
-
-    def inorder (subtree_root=@root, result=[])
-        # BinaryTreeNode -> Array
-        # Returns an array representing an inorder traversal of the BST
-
-        # While we haven't hit the end of a tree branch keep traversing through
-        # the tree
-        unless subtree_root.nil?
-            # Add the inorder traversal result from left subtree
-            result.concat(inorder(subtree_root.left_child))
-            # Add value of current node to result
-            result.push(subtree_root.data)
-            # Add inorder traversal result from right subtree
-            (inorder(subtree_root.right_child, result))
-        end
-        result
-    end
-
-    def preorder (subtree_root=@root, result=[])
-        # BinaryTreeNode -> Array
-        # Returns an array representing an inorder traversal of the BST
-        
-        unless subtree_root.nil?
-            # Add value of current node to result
-            result.push(subtree_root.data)
-            # Add the inorder traversal result from left subtree
-            result.concat(preorder(subtree_root.left_child))
-            # Add inorder traversal result from right subtree
-            (preorder(subtree_root.right_child, result))
-        end
-        result
-    end
-
-    def postorder (subtree_root=@root, result=[])
-        # BinaryTreeNode -> Array
-        # Returns an array representing an inorder traversal of the BST
-        
-        unless subtree_root.nil?
-            # Add the inorder traversal result from left subtree
-            result.concat(postorder(subtree_root.left_child))
-            # Add inorder traversal result from right subtree
-            (postorder(subtree_root.right_child, result))
-            # Add value of current node to result
-            result.push(subtree_root.data)
-        end
-        result
-    end
+    # Start: get methods
 
     def get_node (value)
         # int -> BinaryTreeNode/nil
@@ -263,11 +159,109 @@ class BinarySearchTree
         current_node
     end
 
-    def balanced?
-        # nil -> balanced
-        # Returns true if the BST is balanced else returns false
+    def depth (value)
+        # int -> int
+        # Finds the depth of the desired node if it exists
+        # depth is distance (edges) from root to the node
+        # NOTE: root node is depth 0
 
-        balanced_helper(@root)[0]
+        # Counter for desired node depth
+        depth_counter = 0
+        # Begin traversing at root node
+        current_node = @root
+        # Move down tree till nil or desired node reached
+        # nil means desired node doesn't exist
+        until current_node.nil? || value == current_node.data
+            # if desired value is less than current node go to left child
+            if value < current_node.data
+                current_node = current_node.left_child
+            # If desired value is greater than current node go to right child
+            else
+                current_node = current_node.right_child
+            end
+            # When moving down raise depth counter
+            depth_counter += 1
+        end
+        # If nil reached, desired node does not exist, raise error
+        raise InvalidNodeError.new("node with value #{value} does not exist") if current_node.nil?
+        # else return depth counter
+        depth_counter
+    end
+
+    def height (value)
+        # int -> int
+        # Finds the height of the desired node if it exists
+        # height is distance (edges) from the node to its furthest descendant
+        # NOTE: leaf node is height 1
+
+        # Store desired node
+        main_node = get_node(value)
+        # If the desired node is nil (not found) raise InvalidNodeError
+        raise InvalidNodeError.new("node with value #{value} does not exist") if main_node.nil?
+        # Else return the height of the node using height_helper
+        height_helper(main_node)
+
+    end
+
+    # End: get methods
+
+    def insert (value)
+        # int -> nil
+        # If tree is empty sets node with value as root,
+        # otherwise insert node with value in a leaf position
+        # while maintaining BST conditions
+
+        # Check if child is nil in case root node is nil
+        # This case only occurs on the root node
+        unless @root.class == BinaryTreeNode
+            # Set root as the desired node
+            @root = BinaryTreeNode.new(value)
+        else
+            # Otherwise call insert helper function to insert node
+            _insert_helper(value)
+        end
+    end
+
+    def delete (delete_value, subtree_root=@root)
+        # int -> nil
+        # Removes the desires node if it exists
+        # Restores BST to maintain BST properties.
+        # Note: raises InvalidNodeError when node doesn't exist
+
+        if subtree_root.data.nil?
+            return subtree_root
+        elsif delete_value < subtree_root.data
+            subtree_root.left_child = delete(delete_value, subtree_root.left_child)
+        elsif delete_value > subtree_root.data
+            subtree_root.right_child = delete(delete_value, subtree_root.right_child)
+        # delete_value == subtree_root.data
+        # We found node to delete
+        else
+
+            # Case (1): Deleted node has no children
+            return nil unless subtree_root.has_children?
+            # Case (2): Deleted node has one child
+            # Move up right child if no left child
+            return subtree_root.right_child unless subtree_root.has_left?
+            # Move up left child if no right child
+            return subtree_root.left_child unless subtree_root.has_right?
+
+            # Case (3): Deleted node has two children
+
+            # Get the smallest node in the subtree with deleted node as root
+            # This node will replace the deleted node
+            # Rather than replacing the whole node we replace the data
+            replace_node_value = get_min(subtree_root.right_child).data
+            # Since we replaced data we still need to remove the old replacing
+            # node, this has no kids so is easy for delete to handle
+            delete(replace_node_value, subtree_root)
+            # Since we deleted old replacing node we can replace value of
+            # deleted node without duplicating values
+            subtree_root.data = replace_node_value
+
+        end
+        subtree_root
+
     end
 
     def rebalance
@@ -281,10 +275,94 @@ class BinarySearchTree
         # note build_tree creates a balanced binary tree
         # Note: rebalance array already sorted with no duplicates as required by build_tree
         @root = build_tree(rebalance_array, 0, (rebalance_array.length - 1))
+    end
+
+    # Start: traversal methods
+
+    def inorder (subtree_root=@root, result=[])
+        # BinaryTreeNode -> Array
+        # Returns an array representing an inorder traversal of the BST
+
+        # While we haven't hit the end of a tree branch keep traversing through
+        # the tree
+        unless subtree_root.nil?
+            # Add the inorder traversal result from left subtree
+            result.concat(inorder(subtree_root.left_child))
+            # Add value of current node to result
+            result.push(subtree_root.data)
+            # Add inorder traversal result from right subtree
+            (inorder(subtree_root.right_child, result))
+        end
+        result
+    end
+
+    def preorder (subtree_root=@root, result=[])
+        # BinaryTreeNode -> Array
+        # Returns an array representing an inorder traversal of the BST
+        
+        unless subtree_root.nil?
+            # Add value of current node to result
+            result.push(subtree_root.data)
+            # Add the inorder traversal result from left subtree
+            result.concat(preorder(subtree_root.left_child))
+            # Add inorder traversal result from right subtree
+            (preorder(subtree_root.right_child, result))
+        end
+        result
+    end
+
+    def postorder (subtree_root=@root, result=[])
+        # BinaryTreeNode -> Array
+        # Returns an array representing an inorder traversal of the BST
+        
+        unless subtree_root.nil?
+            # Add the inorder traversal result from left subtree
+            result.concat(postorder(subtree_root.left_child))
+            # Add inorder traversal result from right subtree
+            (postorder(subtree_root.right_child, result))
+            # Add value of current node to result
+            result.push(subtree_root.data)
+        end
+        result
+    end
+
+    # End: traversal methods
+
+    # Start: ? methods
+
+    def balanced?
+        # nil -> balanced
+        # Returns true if the BST is balanced else returns false
+
+        balanced_helper(@root)[0]
+    end
+
+    # End: ? methods
+
+    private
+
+    # START: height helper methods
+
+    def height_helper (subtree_root)
+        # BinaryTreeNode -> int
+        # Takes a tree node and returns its height (edges from it to deepest descendant leaf)
+        # NOTE: used in height method
+
+        # If we are on a nil value (child of leaf nodes are nil) return height 0
+        return 0 if subtree_root.nil?
+
+        # Get height of left child
+        left_height = height_helper(subtree_root.left_child)
+        # Get height of right child
+        right_height = height_helper(subtree_root.right_child)
+
+        # The height of the current node is the max of height of children and add one for the
+        # current node
+        return (1 + max(left_height, right_height))
 
     end
 
-    private
+    # END: height helper methods
 
     # START: insert helper methods
 
@@ -359,6 +437,8 @@ class BinarySearchTree
 
     def max (*values)
         # var_args(int) -> int
+        # Returns the maximum value amongst the integer arguments given
+
         values.max
     end
 
@@ -375,3 +455,7 @@ main_tree.insert(15)
 main_tree.insert(18)
 main_tree.insert(21)
 main_tree.pretty_print
+
+x = 8
+puts main_tree.depth(x)
+puts main_tree.height(x)
