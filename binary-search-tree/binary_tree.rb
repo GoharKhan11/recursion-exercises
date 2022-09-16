@@ -199,7 +199,7 @@ class BinarySearchTree
         # If the desired node is nil (not found) raise InvalidNodeError
         raise InvalidNodeError.new("node with value #{value} does not exist") if main_node.nil?
         # Else return the height of the node using height_helper
-        height_helper(main_node)
+        _height_helper(main_node)
 
     end
 
@@ -279,51 +279,76 @@ class BinarySearchTree
 
     # Start: traversal methods
 
-    def inorder (subtree_root=@root, result=[])
+    def level (subtree_root=@root, &tree_block)
         # BinaryTreeNode -> Array
-        # Returns an array representing an inorder traversal of the BST
-
-        # While we haven't hit the end of a tree branch keep traversing through
-        # the tree
-        unless subtree_root.nil?
-            # Add the inorder traversal result from left subtree
-            result.concat(inorder(subtree_root.left_child))
-            # Add value of current node to result
-            result.push(subtree_root.data)
-            # Add inorder traversal result from right subtree
-            (inorder(subtree_root.right_child, result))
+        # Runs block on tree nodes in inorder traversal of the BST
+        # Returns an array representing a level order traversal if no block given
+        
+        # Check if no block is given
+        unless block_given?
+            # Set an array to hold inorder traversal
+            result = []
+            # create lamba to pass inorder_block to add each node data value to result
+            tree_block = ->(current_node) {result.push(current_node.data)}
         end
-        result
+        # Call block using inorder_block method
+        _level_block(subtree_root, &tree_block)
+        # If no block was given, return result array of traversal from default lambda
+        return result unless block_given?
     end
 
-    def preorder (subtree_root=@root, result=[])
+    def inorder (subtree_root=@root, &tree_block)
         # BinaryTreeNode -> Array
-        # Returns an array representing an inorder traversal of the BST
-        
-        unless subtree_root.nil?
-            # Add value of current node to result
-            result.push(subtree_root.data)
-            # Add the inorder traversal result from left subtree
-            result.concat(preorder(subtree_root.left_child))
-            # Add inorder traversal result from right subtree
-            (preorder(subtree_root.right_child, result))
+        # Runs block on tree nodes in inorder traversal of the BST
+        # Returns an array representing an inorder traversal if no block given
+
+        # Check if no block is given
+        unless block_given?
+            # Set an array to hold inorder traversal
+            result = []
+            # create lamba to pass inorder_block to add each node data value to result
+            tree_block = ->(current_node) {result.push(current_node.data)}
         end
-        result
+        # Call block using inorder_block method
+        _inorder_block(subtree_root, &tree_block)
+        # If no block was given, return result array of traversal from default lambda
+        return result unless block_given?
     end
 
-    def postorder (subtree_root=@root, result=[])
+    def preorder (subtree_root=@root, &tree_block)
         # BinaryTreeNode -> Array
-        # Returns an array representing an inorder traversal of the BST
+        # Runs block on tree nodes in preorder traversal of the BST
+        # Returns an array representing a preorder traversal if no block given
         
-        unless subtree_root.nil?
-            # Add the inorder traversal result from left subtree
-            result.concat(postorder(subtree_root.left_child))
-            # Add inorder traversal result from right subtree
-            (postorder(subtree_root.right_child, result))
-            # Add value of current node to result
-            result.push(subtree_root.data)
+        # Check if no block is given
+        unless block_given?
+            # Set an array to hold preorder traversal
+            result = []
+            # create lamba to pass preorder to add each node data value to result
+            tree_block = ->(current_node) {result.push(current_node.data)}
         end
-        result
+        # Call block using preorder_block method
+        _preorder_block(subtree_root, &tree_block)
+        # If no block was given, return result array of traversal from default lambda
+        return result unless block_given?
+    end
+
+    def postorder (subtree_root=@root, &tree_block)
+        # BinaryTreeNode -> Array
+        # Runs block on tree nodes in postorder traversal of the BST
+        # Returns an array representing a postorder traversal if no block given
+        
+        # Check if no block is given
+        unless block_given?
+            # Set an array to hold postorder traversal
+            result = []
+            # create lamba to pass postorder to add each node data value to result
+            tree_block = ->(current_node) {result.push(current_node.data)}
+        end
+        # Call block using postorder_block method
+        _postorder_block(subtree_root, &tree_block)
+        # If no block was given, return result array of traversal from default lambda
+        return result unless block_given?
     end
 
     # End: traversal methods
@@ -334,16 +359,16 @@ class BinarySearchTree
         # nil -> balanced
         # Returns true if the BST is balanced else returns false
 
-        balanced_helper(@root)[0]
+        _balanced_helper(@root)[0]
     end
 
     # End: ? methods
 
-    private
+    #private
 
     # START: height helper methods
 
-    def height_helper (subtree_root)
+    def _height_helper (subtree_root)
         # BinaryTreeNode -> int
         # Takes a tree node and returns its height (edges from it to deepest descendant leaf)
         # NOTE: used in height method
@@ -352,13 +377,13 @@ class BinarySearchTree
         return 0 if subtree_root.nil?
 
         # Get height of left child
-        left_height = height_helper(subtree_root.left_child)
+        left_height = _height_helper(subtree_root.left_child)
         # Get height of right child
-        right_height = height_helper(subtree_root.right_child)
+        right_height = _height_helper(subtree_root.right_child)
 
         # The height of the current node is the max of height of children and add one for the
         # current node
-        return (1 + max(left_height, right_height))
+        return (1 + _max(left_height, right_height))
 
     end
 
@@ -411,9 +436,82 @@ class BinarySearchTree
 
     # END: insert helper methods
 
+    # START: traversal helper methods
+
+    def _level_block (subtree_root=@root, &tree_block)
+        # BinaryTreeNode -> Array
+        # Runs block on tree nodes in level traversal of the BST
+
+        # Create array to act as queue, we push nodes in and shift them out
+        tree_queue = [subtree_root]
+        # Keep running through levels till we run out of nodes
+        until tree_queue.empty?
+            # Gets the next node in the queue
+            current_node = tree_queue.shift
+            # Adds children of current node to the queue (children are on the same level)
+            # Notes:
+            # - We start with root on level 0
+            # - Children of root enter queu together and are on the same level
+            # - We shift nodes on the same level and get their children which are all
+            # one level down AND on the same level
+            # - So we always go through a whole level and then move to the next if it exists
+            tree_queue.push(current_node.left_child) unless current_node.left_child.nil?
+            tree_queue.push(current_node.right_child) unless current_node.right_child.nil?
+            # call block on the current node
+            tree_block.call(current_node)
+        end
+    end
+        
+
+    def _inorder_block (subtree_root=@root, &tree_block)
+        # BinaryTreeNode -> Array
+        # Runs block on tree nodes in inorder traversal of the BST
+
+        # While we haven't hit the end of a tree branch keep traversing through
+        # the tree
+        unless subtree_root.nil?
+            # Recursively apply block to left subtree
+            _inorder_block(subtree_root.left_child, &tree_block)
+            # Call block on current node
+            tree_block.call(subtree_root)
+            # Recursively apply block to right subtree
+            _inorder_block(subtree_root.right_child, &tree_block)
+        end
+    end
+
+    def _preorder_block (subtree_root=@root, &tree_block)
+        # BinaryTreeNode -> Array
+        # Runs block on tree nodes in preorder traversal of the BST
+        
+        unless subtree_root.nil?
+            # Call block on current node
+            tree_block.call(subtree_root)
+            # Recursively apply block to left subtree
+            _preorder_block(subtree_root.left_child, &tree_block)
+            # Recursively apply block to right subtree
+            _preorder_block(subtree_root.right_child, &tree_block)
+        end
+    end
+
+    def _postorder_block (subtree_root=@root, &tree_block)
+        # BinaryTreeNode -> Array
+        # Runs block on tree nodes in postorder traversal of the BST
+        
+        unless subtree_root.nil?
+            # Recursively apply block to left subtree
+            _postorder_block(subtree_root.left_child, &tree_block)
+            # Recursively apply block to right subtree
+            _postorder_block(subtree_root.right_child, &tree_block)
+            # Call block on current node
+            tree_block.call(subtree_root)
+        end
+    end
+    
+    # END: traversal helper methods
+
     # START: balanced? helper methods
 
-    def balanced_helper (subtree_root)
+    def _balanced_helper (subtree_root)
         # BinaryTreeNode -> Array[bool, int]
         # Returns an array where first value shows if subtree is balanced and second value
         # shows height of subtree
@@ -425,17 +523,17 @@ class BinarySearchTree
         # If subtree is not empty
         # Recursively call balanced_helper to get the balanced status array for left and right
         # child 
-        left_status = balanced_helper(subtree_root.left_child)
-        right_status = balanced_helper(subtree_root.right_child)
+        left_status = _balanced_helper(subtree_root.left_child)
+        right_status = _balanced_helper(subtree_root.right_child)
         # See if left and right subtrees are balanced
         # See if height of both subtrees differ by at most 1 (so current tree is balanced)
         balanced = left_status[0] && right_status[0] &&
             ((left_status[1] - right_status[1]).abs <= 1)
-        return [balanced, 1+max(left_status[1], right_status[1])]
+        return [balanced, 1+_max(left_status[1], right_status[1])]
 
     end
 
-    def max (*values)
+    def _max (*values)
         # var_args(int) -> int
         # Returns the maximum value amongst the integer arguments given
 
@@ -447,15 +545,36 @@ class BinarySearchTree
 
 end
 
-main_tree = BinarySearchTree.new([4,4,7,14,25,1,6,1,20,25,22])
-# main_tree.pretty_print
-
-main_tree.insert(16)
-main_tree.insert(15)
-main_tree.insert(18)
-main_tree.insert(21)
+main_tree = BinarySearchTree.new(Array.new(15) {rand(1..100)})
+main_tree.pretty_print
+puts "tree is balanced?: #{main_tree.balanced?}"
+puts "inorder traversal: #{main_tree.inorder}"
+puts "preorder traversal: #{main_tree.preorder}"
+puts "postorder traversal: #{main_tree.postorder}\n"
+Array.new(10) {rand(100..200)}.each {|item| main_tree.insert(item)}
+puts "After inserting 10 ranomd numbers between 100 and 200:\n"
+main_tree.pretty_print
+main_tree.rebalance
+puts "After rebalance:\n"
 main_tree.pretty_print
 
-x = 8
-puts main_tree.depth(x)
-puts main_tree.height(x)
+# main_tree = BinarySearchTree.new([11,5,2,19,13,2,5,3,17,19])
+# main_tree.pretty_print
+# puts "tree is balanced: #{main_tree.balanced?}"
+# [23, 43, 89, 23, 31, 11, 79].each {|item| main_tree.insert(item)}
+# main_tree.pretty_print
+# puts "tree is balanced: #{main_tree.balanced?}"
+# # main_tree.rebalance
+# # main_tree.pretty_print
+# # puts "tree is balanced: #{main_tree.balanced?}"
+# puts "height of 23: #{main_tree.height(23)}"
+# puts "depth of 23: #{main_tree.depth(23)}"
+# traversal_lambda = ->(current_node) {puts current_node.data}
+# p main_tree.level
+# main_tree.level &traversal_lambda
+# p main_tree.inorder
+# main_tree.inorder &traversal_lambda
+# p main_tree.preorder
+# main_tree.preorder &traversal_lambda
+# p main_tree.postorder
+# main_tree.postorder &traversal_lambda
