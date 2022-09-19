@@ -149,8 +149,3 @@ class KnightTravalis
     end
 
 end
-
-kt = KnightTravalis.new(9)
-# p kt._add_arrays([11,17], [25,16])
-
-puts kt.knight_moves([0,0], [3,3])
